@@ -1,0 +1,36 @@
+{
+  "name": "ts-api",
+  "version": "1.0.0",
+  "description": "fundraise-app-test",
+  "author": "YSidorka",
+  "license": "MIT",
+  "main": "dist/app.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YSidorka/fundraise-app.git"
+  },
+  "engines": {
+    "node": ">=18.0.0 <21.0.0",
+    "npm": ">=8.19.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "app": "tsc && node -r dotenv/config dist/app.js dotenv_config_path=./.env",
+    "sync": "tsc && node -r dotenv/config dist/sync.js dotenv_config_path=./.env",
+    "sync:full": "tsc && node -r dotenv/config dist/sync.js --full-reindex dotenv_config_path=./.env",
+    "format": "prettier -w ."
+  },
+  "dependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "mongodb": "^6.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "dotenv": "^16.0.3",
+    "nodemon": "^3.0.1",
+    "typescript": "^5.3.3"
+  },
+  "nodemonConfig": {
+    "ignore": []
+  }
+}
