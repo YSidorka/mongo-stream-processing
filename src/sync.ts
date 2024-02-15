@@ -38,6 +38,6 @@ async function sync() {
 
 sync()
   .then(() => {
-    console.log(`[${FULL_SYNC_FLAG ? 'FULL' : 'default'}] Synchronization...`);
+    console.log(`Synchronization finished`);
   })
   .catch(console.error);

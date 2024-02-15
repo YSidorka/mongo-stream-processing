@@ -1,5 +1,5 @@
 export const GEN_CHUNK_LIMIT = 10;
-export const GEN_INTERVAL = 1000;
+export const GEN_INTERVAL = 200;
 
 export const CHUNK_DL = 1000;
 export const CHUNK_SIZE = 1000;
