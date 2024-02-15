@@ -3,7 +3,7 @@ import { ChangeStream, Collection, ResumeToken } from 'mongodb';
 
 import CustomerType from './customer.type';
 import { SYNC_DOC_ID } from '../config';
-import { anonymizeCustomer, getFullDocument } from './customer.service';
+import { anonymizeCustomer, chunkTransform } from './customer.service';
 
 import SyncTokenType from '../mongo-module/sync-token.type';
 import TransformStream from '../mongo-module/transform.stream';
@@ -39,8 +39,7 @@ class SyncService {
     await new Promise((resolve, reject) => {
       pipeline(
         stream.stream(),
-        new TransformStream(getFullDocument),
-        new TransformStream(anonymizeCustomer),
+        new TransformStream(chunkTransform),
         new MongoWritableStream(this.target),
         (err) => {
           if (err) return reject(err);
@@ -58,11 +57,6 @@ class SyncService {
       resumeAfter,
       fullDocument: 'updateLookup',
     });
-    this.changeStream.on('change', async () => {
-      await this.updateSyncToken(); // TODO need to change
-    });
-
-    await this.updateSyncToken();
     return this.changeStream;
   }
 
@@ -71,20 +65,7 @@ class SyncService {
     return doc?.token;
   }
 
-  private async updateSyncToken(): Promise<void> {
-    if (!this.changeStream) return;
-    await this.target.updateOne(
-      { _id: SYNC_DOC_ID },
-      // @ts-ignore
-      { $set: { token: this.changeStream.resumeToken } },
-      { upsert: true }
-    ).catch((err) => {
-      console.log(err);
-    });
-  }
-
   async destroy(): Promise<void> {
-    await this.updateSyncToken();
     await this.changeStream?.close();
     this.changeStream = undefined;
   }

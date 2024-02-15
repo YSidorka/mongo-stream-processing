@@ -25,7 +25,7 @@ function createRandomCustomer(): CustomerType {
   } as CustomerType;
 }
 
-function anonymizeCustomer(doc: CustomerType): CustomerType {
+function anonymizeCustomer(doc: CustomerType): { doc: CustomerType } {
   doc.firstName = encrypt(doc.firstName);
   doc.lastName = encrypt(doc.lastName);
   const splitArr = doc.email.split('@');
@@ -35,15 +35,20 @@ function anonymizeCustomer(doc: CustomerType): CustomerType {
   doc.address.line1 = encrypt(doc.address.line1);
   doc.address.line2 = encrypt(doc.address.line2);
   doc.address.postcode = encrypt(doc.address.postcode);
-  return doc;
+  return { doc };
 }
 
-function getFullDocument(doc: { fullDocument?: CustomerType }): CustomerType | null {
-  return (!doc?.fullDocument) ? null : doc.fullDocument;
+function chunkTransform(chunk: { fullDocument?: CustomerType, _id: Object }): { doc:CustomerType, token: Object | null } | null {
+  if (!chunk?.fullDocument) return null;
+  const result = {
+    doc: chunk.fullDocument,
+    token: chunk._id || null
+  };
+  return result;
 }
 
 export {
   createRandomCustomer,
   anonymizeCustomer,
-  getFullDocument
+  chunkTransform
 };

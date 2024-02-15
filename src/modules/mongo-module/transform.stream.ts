@@ -6,17 +6,15 @@ class TransformStream extends Transform {
   constructor(actionFn: Function) {
     super({ objectMode: true });
     this.actionFn = actionFn;
-    // @ts-ignore
-    // this.actionFn = ((doc) => doc);
   }
 
   _transform(
-    doc: any,
+    chunk: any,
     encoding: BufferEncoding,
     callback: TransformCallback
   ) {
-    if (!doc) return callback();
-    callback(null, this.actionFn(doc));
+    if (!chunk) return callback();
+    callback(null, this.actionFn(chunk));
   }
 }
 
