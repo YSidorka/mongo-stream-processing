@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker';
 import AddressType from './address.type';
 import CustomerType from './customer.type';
+import { encrypt } from '../utils';
 
 function createRandomCustomer(): CustomerType {
   const firstName = faker.person.firstName();
@@ -24,4 +25,25 @@ function createRandomCustomer(): CustomerType {
   } as CustomerType;
 }
 
-export { createRandomCustomer };
+function anonymizeCustomer(doc: CustomerType): CustomerType {
+  doc.firstName = encrypt(doc.firstName);
+  doc.lastName = encrypt(doc.lastName);
+  const splitArr = doc.email.split('@');
+  doc.email = `${encrypt(splitArr[0])}@${splitArr[1]}`;
+
+  // address
+  doc.address.line1 = encrypt(doc.address.line1);
+  doc.address.line2 = encrypt(doc.address.line2);
+  doc.address.postcode = encrypt(doc.address.postcode);
+  return doc;
+}
+
+function getFullDocument(doc: { fullDocument?: CustomerType }): CustomerType | null {
+  return (!doc?.fullDocument) ? null : doc.fullDocument;
+}
+
+export {
+  createRandomCustomer,
+  anonymizeCustomer,
+  getFullDocument
+};

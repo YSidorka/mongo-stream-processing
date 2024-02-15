@@ -4,7 +4,6 @@
   "description": "fundraise-app-test",
   "author": "YSidorka",
   "license": "MIT",
-  "main": "dist/app.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/YSidorka/fundraise-app.git"

@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import AddressType from './address.type';
 
 type CustomerType = {
-  readonly _id: ObjectId;
+  readonly _id: ObjectId | string;
   firstName: string;
   lastName: string;
   email: string;

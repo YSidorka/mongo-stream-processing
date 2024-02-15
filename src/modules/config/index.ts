@@ -3,6 +3,7 @@ export const GEN_INTERVAL = 1000;
 
 export const CHUNK_DL = 1000;
 export const CHUNK_SIZE = 1000;
+export const SYNC_DOC_ID = '$sync';
 
 export const DB_NAME = 'fundraise';
 export const SOURCE_COLLECTION = 'customers';
