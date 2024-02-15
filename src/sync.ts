@@ -30,7 +30,7 @@ async function sync() {
   }
 
   process.on('exit', async () => {
-    console.log('Final destroy');
+    // console.log('Final destroy');
     await dbClient.close();
     await syncService.destroy();
   });
