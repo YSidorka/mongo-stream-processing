@@ -25,7 +25,7 @@ export class MongoWritableStream<T extends { _id: any }> extends Writable {
     if (chunk.token) this.resumeToken = chunk.token;
 
     if (this.buffer.length >= CHUNK_SIZE) {
-      this.insertChunk().then(() => callback());
+      this.insertChunk().then(() => callback()).catch((err) => callback(err));
     } else {
       callback();
     }
