@@ -4,7 +4,7 @@ import CustomerType from './customer.type';
 import { encrypt } from '../utils';
 import { GEN_CHUNK_LIMIT } from '../config';
 
-async function gererateCustomers(): Promise<CustomerType[]>  {
+async function gererateCustomers(): Promise<CustomerType[]> {
   const result: Array<CustomerType> = [];
   const random = Math.trunc(Math.random() * GEN_CHUNK_LIMIT) + 1;
   for (let i = 0; i < random; i++) result.push(createRandomCustomer());
@@ -50,11 +50,13 @@ function docTransform(doc: CustomerType): { doc: CustomerType } {
   return { doc };
 }
 
-function chunkTransform(chunk: { fullDocument?: CustomerType, _id: Object }): { doc:CustomerType, token: Object | null } | null {
-  if (!chunk?.fullDocument) return null;
+function chunkTransform(chunk: { fullDocument: CustomerType; _id: Object }): {
+  doc: CustomerType;
+  token: Object | null;
+} {
   return {
     token: chunk._id || null,
-    doc: anonymizeCustomer(chunk.fullDocument)
+    doc: anonymizeCustomer(chunk.fullDocument),
   };
 }
 
@@ -63,5 +65,5 @@ export {
   createRandomCustomer,
   anonymizeCustomer,
   docTransform,
-  chunkTransform
+  chunkTransform,
 };

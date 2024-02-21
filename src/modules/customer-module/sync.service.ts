@@ -2,13 +2,16 @@ import { pipeline } from 'stream/promises';
 import { ChangeStream, Collection, ResumeToken } from 'mongodb';
 import CustomerType from './customer.type';
 import { SYNC_DOC_ID } from '../config';
-import { anonymizeCustomer, chunkTransform, docTransform } from './customer.service';
+import {
+  anonymizeCustomer,
+  chunkTransform,
+  docTransform,
+} from './customer.service';
 import SyncTokenType from '../mongo-module/sync-token.type';
 import TransformStream from '../mongo-module/transform.stream';
 import MongoWritableStream from '../mongo-module/writable.stream';
 
 class SyncService {
-
   private changeStream: ChangeStream | undefined;
 
   constructor(
@@ -34,7 +37,7 @@ class SyncService {
     await pipeline(
       stream.stream(),
       new TransformStream(chunkTransform),
-      new MongoWritableStream(this.target, this.updateSyncToken.bind(this)),
+      new MongoWritableStream(this.target, this.updateSyncToken.bind(this))
     );
   }
 
@@ -50,7 +53,9 @@ class SyncService {
   }
 
   private async findResumeToken(): Promise<ResumeToken | undefined> {
-    const doc = await this.tokenCollection.findOne<SyncTokenType>({ _id: SYNC_DOC_ID });
+    const doc = await this.tokenCollection.findOne<SyncTokenType>({
+      _id: SYNC_DOC_ID,
+    });
     return doc?.token;
   }
 
@@ -69,4 +74,4 @@ class SyncService {
   }
 }
 
-export default SyncService
+export default SyncService;

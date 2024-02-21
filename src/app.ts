@@ -1,10 +1,6 @@
 import { scheduler } from 'node:timers/promises';
 import { MongoClient } from 'mongodb';
-import {
-  SOURCE_COLLECTION,
-  DB_URI,
-  GEN_INTERVAL,
-} from './modules/config';
+import { SOURCE_COLLECTION, DB_URI, GEN_INTERVAL } from './modules/config';
 import CustomerType from './modules/customer-module/customer.type';
 import { gererateCustomers } from './modules/customer-module/customer.service';
 

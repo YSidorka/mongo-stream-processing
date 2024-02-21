@@ -4,7 +4,7 @@ import {
   TARGET_COLLECTION,
   TOKEN_COLLECTION,
   DB_URI,
-  FULL_SYNC_FLAG
+  FULL_SYNC_FLAG,
 } from './modules/config';
 import CustomerType from './modules/customer-module/customer.type';
 import SyncService from './modules/customer-module/sync.service';
