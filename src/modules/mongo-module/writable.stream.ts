@@ -1,6 +1,6 @@
 import { Writable } from 'stream';
 import { AnyBulkWriteOperation, Collection } from 'mongodb';
-import { CHUNK_SIZE, CHUNK_DL, SYNC_DOC_ID } from '../config';
+import { CHUNK_SIZE, CHUNK_DL } from '../config';
 
 export class MongoWritableStream<T extends { _id: any }> extends Writable {
 
@@ -8,7 +8,10 @@ export class MongoWritableStream<T extends { _id: any }> extends Writable {
   private timer: NodeJS.Timeout | undefined;
   private resumeToken: Object | undefined;
 
-  constructor(private readonly target: Collection<T>) {
+  constructor(
+    private readonly target: Collection<T>,
+    private tokenActionFn?: Function
+  ) {
     super({ objectMode: true });
     this.buffer = [];
     this.timer = setInterval(this.insertChunk.bind(this), CHUNK_DL);
@@ -38,12 +41,13 @@ export class MongoWritableStream<T extends { _id: any }> extends Writable {
   }
 
   private async insertChunk() {
-    if (!this.buffer.length) return;
+    const buffSize = this.buffer.length;
+    if (!buffSize) return;
 
     const bulk = this.createBulk(this.buffer);
     await this.target.bulkWrite(bulk);
-    if (this.resumeToken) await this.updateSyncToken(this.resumeToken);
-    this.buffer.length = 0;
+    if (this.resumeToken && this.tokenActionFn) await this.tokenActionFn(this.resumeToken);
+    this.buffer.slice(buffSize);
   }
 
   private createBulk(docs: T[]): AnyBulkWriteOperation<T>[] {
@@ -53,21 +57,11 @@ export class MongoWritableStream<T extends { _id: any }> extends Writable {
           filter: { _id: doc._id },
           update: { $set: doc },
           upsert: true,
-        },
-      }) as AnyBulkWriteOperation<T>,
+        }
+      })
     );
   }
 
-  private async updateSyncToken(token: Object | null): Promise<void> {
-    await this.target.updateOne(
-      // @ts-ignore
-      { _id: SYNC_DOC_ID },
-      { $set: { token } },
-      { upsert: true }
-    ).catch((err) => {
-      console.log(err);
-    });
-  }
 }
 
 export default MongoWritableStream;

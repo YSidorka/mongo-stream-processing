@@ -21,12 +21,11 @@
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
+    "dotenv": "^16.0.3",
     "mongodb": "^6.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",
-    "dotenv": "^16.0.3",
-    "nodemon": "^3.0.1",
     "typescript": "^5.3.3"
   },
   "nodemonConfig": {

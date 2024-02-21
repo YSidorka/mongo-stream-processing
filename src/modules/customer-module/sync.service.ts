@@ -1,10 +1,8 @@
-import { pipeline } from 'stream';
+import { pipeline } from 'stream/promises';
 import { ChangeStream, Collection, ResumeToken } from 'mongodb';
-
 import CustomerType from './customer.type';
 import { SYNC_DOC_ID } from '../config';
-import { anonymizeCustomer, chunkTransform } from './customer.service';
-
+import { anonymizeCustomer, chunkTransform, docTransform } from './customer.service';
 import SyncTokenType from '../mongo-module/sync-token.type';
 import TransformStream from '../mongo-module/transform.stream';
 import MongoWritableStream from '../mongo-module/writable.stream';
@@ -15,38 +13,29 @@ class SyncService {
 
   constructor(
     private readonly source: Collection<CustomerType>,
-    private readonly target: Collection<CustomerType & SyncTokenType>
+    private readonly target: Collection<CustomerType>,
+    private readonly tokenCollection: Collection<SyncTokenType>
   ) {}
 
   async fullSync(): Promise<void> {
     const cursor = this.source.find();
     console.log('Sync all...');
-    await new Promise((resolve, reject) => {
-      pipeline(
-        cursor.stream(),
-        new TransformStream(anonymizeCustomer),
-        new MongoWritableStream(this.target),
-        (err) => {
-          err ? reject(err) : resolve(null);
-        },
-      );
-    });
+    await pipeline(
+      cursor.stream(),
+      new TransformStream(anonymizeCustomer),
+      new TransformStream(docTransform),
+      new MongoWritableStream(this.target)
+    );
   }
 
   async watch(): Promise<void> {
     const stream = await this.createChangeStream();
     console.log('Listening for changes...');
-    await new Promise((resolve, reject) => {
-      pipeline(
-        stream.stream(),
-        new TransformStream(chunkTransform),
-        new MongoWritableStream(this.target),
-        (err) => {
-          if (err) return reject(err);
-          resolve(null);
-        },
-      );
-    });
+    await pipeline(
+      stream.stream(),
+      new TransformStream(chunkTransform),
+      new MongoWritableStream(this.target, this.updateSyncToken.bind(this)),
+    );
   }
 
   private async createChangeStream(): Promise<ChangeStream> {
@@ -61,8 +50,17 @@ class SyncService {
   }
 
   private async findResumeToken(): Promise<ResumeToken | undefined> {
-    const doc = await this.target.findOne<SyncTokenType>({ _id: SYNC_DOC_ID });
+    const doc = await this.tokenCollection.findOne<SyncTokenType>({ _id: SYNC_DOC_ID });
     return doc?.token;
+  }
+
+  private async updateSyncToken(token: any): Promise<void> {
+    await this.tokenCollection.updateOne(
+      { _id: SYNC_DOC_ID },
+      { $set: { token } },
+      { upsert: true }
+    );
+    return;
   }
 
   async destroy(): Promise<void> {

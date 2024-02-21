@@ -2,6 +2,14 @@ import { faker } from '@faker-js/faker';
 import AddressType from './address.type';
 import CustomerType from './customer.type';
 import { encrypt } from '../utils';
+import { GEN_CHUNK_LIMIT } from '../config';
+
+async function gererateCustomers(): Promise<CustomerType[]>  {
+  const result: Array<CustomerType> = [];
+  const random = Math.trunc(Math.random() * GEN_CHUNK_LIMIT) + 1;
+  for (let i = 0; i < random; i++) result.push(createRandomCustomer());
+  return result;
+}
 
 function createRandomCustomer(): CustomerType {
   const firstName = faker.person.firstName();
@@ -13,8 +21,8 @@ function createRandomCustomer(): CustomerType {
   const postcode = faker.location.zipCode();
 
   const city = faker.location.city();
-  const state = faker.location.state();
-  const country = faker.location.country();
+  const state = faker.location.state({ abbreviated: true });
+  const country = faker.location.countryCode('alpha-2');
 
   return {
     firstName,
@@ -25,7 +33,7 @@ function createRandomCustomer(): CustomerType {
   } as CustomerType;
 }
 
-function anonymizeCustomer(doc: CustomerType): { doc: CustomerType } {
+function anonymizeCustomer(doc: CustomerType): CustomerType {
   doc.firstName = encrypt(doc.firstName);
   doc.lastName = encrypt(doc.lastName);
   const splitArr = doc.email.split('@');
@@ -35,20 +43,25 @@ function anonymizeCustomer(doc: CustomerType): { doc: CustomerType } {
   doc.address.line1 = encrypt(doc.address.line1);
   doc.address.line2 = encrypt(doc.address.line2);
   doc.address.postcode = encrypt(doc.address.postcode);
+  return doc;
+}
+
+function docTransform(doc: CustomerType): { doc: CustomerType } {
   return { doc };
 }
 
 function chunkTransform(chunk: { fullDocument?: CustomerType, _id: Object }): { doc:CustomerType, token: Object | null } | null {
   if (!chunk?.fullDocument) return null;
-  const result = {
-    doc: chunk.fullDocument,
-    token: chunk._id || null
+  return {
+    token: chunk._id || null,
+    doc: anonymizeCustomer(chunk.fullDocument)
   };
-  return result;
 }
 
 export {
+  gererateCustomers,
   createRandomCustomer,
   anonymizeCustomer,
+  docTransform,
   chunkTransform
 };
