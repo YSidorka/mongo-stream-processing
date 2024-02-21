@@ -52,10 +52,10 @@ function docTransform(doc: CustomerType): { doc: CustomerType } {
 
 function chunkTransform(chunk: { fullDocument: CustomerType; _id: Object }): {
   doc: CustomerType;
-  token: Object | null;
+  token: Object;
 } {
   return {
-    token: chunk._id || null,
+    token: chunk._id,
     doc: anonymizeCustomer(chunk.fullDocument),
   };
 }

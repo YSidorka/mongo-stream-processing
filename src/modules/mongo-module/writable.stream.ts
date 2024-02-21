@@ -40,14 +40,14 @@ export class MongoWritableStream<T extends { _id: any }> extends Writable {
   }
 
   private async insertChunk() {
-    const buffSize = this.buffer.length;
-    if (!buffSize) return;
+    const buffer = [...this.buffer];
+    this.buffer.length = 0;
 
-    const bulk = this.createBulk(this.buffer);
+    if (!buffer.length) return;
+    const bulk = this.createBulk(buffer);
     await this.target.bulkWrite(bulk);
-    if (this.resumeToken && this.tokenActionFn)
-      await this.tokenActionFn(this.resumeToken);
-    this.buffer.slice(buffSize);
+    if (this.resumeToken && this.tokenActionFn) await this.tokenActionFn(this.resumeToken);
+    buffer.length = 0;
   }
 
   private createBulk(docs: T[]): AnyBulkWriteOperation<T>[] {
